@@ -35,5 +35,10 @@ def current_weather(lat, lon):
 
 def my_view(request):
     if request.method == "GET":
-        data = current_weather(59.93, 30.31)
+        lat = request.GET.get('lat')
+        lon = request.GET.get('lon')
+        if lat is None or lon is None:
+            lat, lon = 59.93, 30.31
+
+        data = current_weather(lat, lon)
         return JsonResponse(data, json_dumps_params={'ensure_ascii': False, 'indent': 4})
