@@ -5,7 +5,24 @@ from django.http import HttpResponse, HttpResponseNotFound
 from .models import DATABASE
 
 
-def products_view(request):
+def products_page_view(request, page: str | int) -> HttpResponse:
+    if request.method == 'GET':
+        if isinstance(page, str):
+            for data in DATABASE.values():
+                if data.get('html') == page:
+                    with open(f'store/products/{page}.html', encoding='utf-8') as f:
+                        html_page = f.read()
+                        return HttpResponse(html_page)
+        elif isinstance(page, int):
+            data = DATABASE.get(str(page))
+            if data:
+                with open(f'store/products/{data.get("html")}.html', encoding='utf-8') as f:
+                    html_page = f.read()
+                    return HttpResponse(html_page)
+        return HttpResponse(status=404)
+
+
+def products_view(request) -> JsonResponse|HttpResponseNotFound:
     if request.method == "GET":
         data = DATABASE.copy()
         product_id = request.GET.get('id')
