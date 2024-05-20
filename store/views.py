@@ -4,6 +4,8 @@ from django.http import JsonResponse
 from django.http import HttpResponse, HttpResponseNotFound
 from .models import DATABASE
 
+from logic.services import filtering_category
+
 
 def products_page_view(request, page: str | int) -> HttpResponse:
     if request.method == 'GET':
@@ -24,13 +26,38 @@ def products_page_view(request, page: str | int) -> HttpResponse:
 
 def products_view(request) -> JsonResponse|HttpResponseNotFound:
     if request.method == "GET":
-        data = DATABASE.copy()
-        product_id = request.GET.get('id')
-        if product_id is not None:
-            data = [product for product in DATABASE.values() if product.get('id') == int(product_id)]
-            if not data:
-                return HttpResponseNotFound("Данного продукта нет в базе данных")
-        return JsonResponse(data, safe=False, json_dumps_params={'ensure_ascii': False, 'indent': 4})
+        # Обработка id из параметров запроса (уже было реализовано ранее)
+        if id_product := request.GET.get("id"):
+            if data := DATABASE.get(id_product):
+                return JsonResponse(data, json_dumps_params={'ensure_ascii': False,
+                                                             'indent': 4})
+            return HttpResponseNotFound("Данного продукта нет в базе данных")
+
+        # Обработка фильтрации из параметров запроса
+        category_key = request.GET.get("category")  # Считали 'category'
+        if ordering_key := request.GET.get("ordering"):  # Если в параметрах есть 'ordering'
+            reverse = request.GET.get("reverse")
+            if reverse and reverse.lower() == 'true':  # Если в параметрах есть 'ordering' и 'reverse'=True
+                # Использовать filtering_category и провести фильтрацию с параметрами category, ordering, reverse=True
+                data = filtering_category(DATABASE, category_key, ordering_key, True)
+            else:  # Если не обнаружили в адресной строке ...&reverse=true , значит reverse=False
+                data = filtering_category(DATABASE, category_key, ordering_key)  # Использовать filtering_category и провести фильтрацию с параметрами category, ordering, reverse=False
+        else:
+            data = filtering_category(DATABASE, category_key)  # Использовать filtering_category и провести фильтрацию с параметрами category
+        # В этот раз добавляем параметр safe=False, для корректного отображения списка в JSON
+        return JsonResponse(data, safe=False, json_dumps_params={'ensure_ascii': False,
+                                                                 'indent': 4})
+
+
+# def products_view(request) -> JsonResponse|HttpResponseNotFound:
+#     if request.method == "GET":
+#         data = DATABASE.copy()
+#         product_id = request.GET.get('id')
+#         if product_id is not None:
+#             data = [product for product in DATABASE.values() if product.get('id') == int(product_id)]
+#             if not data:
+#                 return HttpResponseNotFound("Данного продукта нет в базе данных")
+#         return JsonResponse(data, safe=False, json_dumps_params={'ensure_ascii': False, 'indent': 4})
 
 
 def shop_view(request):
