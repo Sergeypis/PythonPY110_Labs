@@ -54,15 +54,17 @@ def products_page_view(request, page: str | int) -> HttpResponse:
         if isinstance(page, str):
             for data in DATABASE.values():
                 if data.get('html') == page:
-                    with open(f'store/products/{page}.html', encoding='utf-8') as f:
-                        html_page = f.read()
-                        return HttpResponse(html_page)
+                    # with open(f'store/products/{page}.html', encoding='utf-8') as f:
+                    #     html_page = f.read()
+                    #     return HttpResponse(html_page)
+                    return render(request, "store/product.html", context={'product': data})
         elif isinstance(page, int):
             data = DATABASE.get(str(page))
             if data:
-                with open(f'store/products/{data.get("html")}.html', encoding='utf-8') as f:
-                    html_page = f.read()
-                    return HttpResponse(html_page)
+                # with open(f'store/products/{data.get("html")}.html', encoding='utf-8') as f:
+                #     html_page = f.read()
+                #     return HttpResponse(html_page)
+                return render(request, "store/product.html", context={'product': data})
         return HttpResponse(status=404)
 
 
