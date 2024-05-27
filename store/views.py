@@ -11,8 +11,18 @@ from logic.services import view_in_cart, add_to_cart, remove_from_cart
 def cart_view(request):
     if request.method == "GET":
         data = view_in_cart()  # TODO Вызвать ответственную за это действие функцию
-        return JsonResponse(data, json_dumps_params={'ensure_ascii': False,
+        if request.GET.get("format") == 'JSON':
+            return JsonResponse(data, json_dumps_params={'ensure_ascii': False,
                                                      'indent': 4})
+
+        products = []  # Список продуктов
+        for product_id, quantity in data['products'].items():
+            product = DATABASE[product_id]  # Получение информацию о продукте из DATABASE по его product_id
+            product["quantity"] = quantity  # Запись в словарь product текущее значение товара в корзине
+            product["price_total"] = f"{quantity * product['price_after']:.2f}"  # добавление общей цены позиции с ограничением в 2 знака
+            products.append(product)
+
+        return render(request, "store/cart.html", context={"products": products})
 
 
 def cart_add_view(request, id_product):
