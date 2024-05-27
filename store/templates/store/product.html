@@ -102,18 +102,20 @@
     	</div>
     	<div class="container">
     		<div class="row">
+				{% for same_product in products_same_category %}
 				<div class="col-md-6 col-lg-3 ftco-animate">
     				<div class="product">
 
-    					<a href="broccoli.html" class="img-prod"><img class="img-fluid" src="../static/images/product-6.jpg" alt="Colorlib Template">
+    					<a href="{% url 'store:products_page_view' same_product.html %}" class="img-prod">
+							<img class="img-fluid" src="{% static same_product.url %}" alt="Colorlib Template">
     						<div class="overlay"></div>
     					</a>
     					<div class="text py-3 pb-4 px-3 text-center">
-    						<h3><a href="broccoli.html">Брокколи</a></h3>
+    						<h3><a href="{% url 'store:products_page_view' same_product.html %}">{{ same_product.name }}</a></h3>
     						<div class="d-flex">
     							<div class="pricing">
 		    						<p class="price">
-										<span>&#x20bd 320.00</span>
+										<span>&#x20bd {{ same_product.price_after }}</span>
 									</p>
 		    					</div>
 	    					</div>
@@ -134,6 +136,7 @@
     					</div>
     				</div>
     			</div>
+				{% endfor %}
     		</div>
     	</div>
     </section>

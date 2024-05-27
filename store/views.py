@@ -1,11 +1,12 @@
 from django.shortcuts import render
 
+
 from django.http import JsonResponse
 from django.http import HttpResponse, HttpResponseNotFound
 from .models import DATABASE
 
 from logic.services import filtering_category
-from logic.services import view_in_cart, add_to_cart, remove_from_cart
+from logic.services import view_in_cart, add_to_cart, remove_from_cart, filter_same_category
 
 
 def cart_view(request):
@@ -57,18 +58,24 @@ def products_page_view(request, page: str | int) -> HttpResponse:
                     # with open(f'store/products/{page}.html', encoding='utf-8') as f:
                     #     html_page = f.read()
                     #     return HttpResponse(html_page)
-                    return render(request, "store/product.html", context={'product': data})
+                    list_products = filter_same_category(data, DATABASE)
+                    return render(request, "store/product.html",
+                                  context={'product': data,
+                                           'products_same_category': list_products})
         elif isinstance(page, int):
             data = DATABASE.get(str(page))
             if data:
                 # with open(f'store/products/{data.get("html")}.html', encoding='utf-8') as f:
                 #     html_page = f.read()
                 #     return HttpResponse(html_page)
-                return render(request, "store/product.html", context={'product': data})
+                list_products = filter_same_category(data, DATABASE)
+                return render(request, "store/product.html",
+                              context={'product': data,
+                                       'products_same_category': list_products})
         return HttpResponse(status=404)
 
 
-def products_view(request) -> JsonResponse|HttpResponseNotFound:
+def products_view(request) -> JsonResponse | HttpResponseNotFound:
     if request.method == "GET":
         # Обработка id из параметров запроса (уже было реализовано ранее)
         if id_product := request.GET.get("id"):

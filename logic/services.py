@@ -1,6 +1,15 @@
 import json
 import os
 from store.models import DATABASE
+from random import shuffle
+
+
+def filter_same_category(current_product: dict,
+                         database: dict[str, dict]) -> list[dict]:
+    data = list(filter(lambda x: x.get('category') == current_product.get('category'), database.values()))
+    if current_product in data: data.remove(current_product)
+    shuffle(data)
+    return data[:4]
 
 
 def view_in_cart() -> dict:  # Уже реализовано, не нужно здесь ничего писать
