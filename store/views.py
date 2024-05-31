@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.shortcuts import redirect
 
 
 from django.http import JsonResponse
@@ -131,3 +132,76 @@ def shop_view(request):
         return render(request, 'store/shop.html',
                       context={"products": data,
                                "category": category_key})
+
+
+def coupon_check_view(request, coupon):
+    # DATA_COUPON - база данных купонов: ключ - код купона (name_coupon); значение - словарь со значением скидки в процентах и
+    # значением действителен ли купон или нет
+    DATA_COUPON = {
+        "coupon": {
+            "value": 10,
+            "is_valid": True},
+        "coupon_old": {
+            "value": 20,
+            "is_valid": False},
+    }
+    if request.method == "GET":
+        # TODO Проверьте, что купон есть в DATA_COUPON, если он есть, то верните JsonResponse в котором по ключу "discount"
+        # получают значение скидки в процентах, а по ключу "is_valid" понимают действителен ли купон или нет (True, False)
+        # TODO Если купона нет в базе, то верните HttpResponseNotFound("Неверный купон")
+
+        if coupon in DATA_COUPON:
+            data_coupon = {'discount': DATA_COUPON.get(coupon).get('value'),
+                           'is_valid': DATA_COUPON.get(coupon).get('is_valid')}
+            return JsonResponse(data_coupon, json_dumps_params={'ensure_ascii': False, 'indent': 4})
+
+        return HttpResponseNotFound("Неверный купон")
+
+def delivery_estimate_view(request):
+    # База данных по стоимости доставки. Ключ - Страна; Значение словарь с городами и ценами;
+    # Значение с ключом fix_price применяется, если нет города в данной стране
+
+    DATA_PRICE = {
+        "Россия": {
+            "Москва": {"price": 90},
+            "Санкт-Петербург": {"price": 70},
+            "fix_price": 120,
+        },
+    }
+    if request.method == "GET":
+        data = request.GET
+        country = data.get('country')
+        city = data.get('city')
+        # TODO Реализуйте логику расчёта стоимости доставки, которая выполняет следующее:
+        # Если в базе DATA_PRICE есть и страна (country) и существует город(city), то вернуть
+        # JsonResponse со словарём, {"price": значение стоимости доставки}
+        # Если в базе DATA_PRICE есть страна, но нет города, то вернуть
+        # JsonResponse со словарём, {"price": значение фиксированной стоимости доставки}
+        # Если нет страны, то вернуть HttpResponseNotFound("Неверные данные")
+
+        if country not in DATA_PRICE:
+            return HttpResponseNotFound("Неверные данные")
+
+        if city in DATA_PRICE[country]:
+            return JsonResponse({"price": DATA_PRICE[country][city].get("price")})
+
+        return JsonResponse({"price": DATA_PRICE[country].get("fix_price")})
+
+
+def cart_buy_now_view(request, id_product):
+    if request.method == "GET":
+        result = add_to_cart(id_product)
+        if result:
+            return redirect("store:cart_view")
+            # return cart_view(request)
+
+        return HttpResponseNotFound("Неудачное добавление в корзину")
+
+
+def cart_remove_view(request, id_product):
+    if request.method == "GET":
+        result = remove_from_cart(id_product)
+        if result:
+            return redirect("store:cart_view")
+
+        return HttpResponseNotFound("Неудачное удаление из корзины")
