@@ -85,7 +85,7 @@
 	          		<p style="color: #000;">{{product.weight_in_stock}} кг в наличии на складе</p>
 	          	</div>
           	</div>
-          	<p><a href="cart.html" class="btn btn-black py-3 px-5">Добавить в корзину</a></p>
+          	<p><a href="{% url 'store:buy_now' product.id %}" class="btn btn-black py-3 px-5">Добавить в корзину</a></p>
     			</div>
     		</div>
     	</div>
