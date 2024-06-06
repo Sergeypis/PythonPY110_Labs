@@ -10,6 +10,7 @@ def add_user_to_wishlist(request, username: str) -> None:
     """
     Добавляет пользователя в базу данных избранного, если его там не было.
 
+    :param request: Объект запроса.
     :param username: Имя пользователя
     :return: None
     """
@@ -27,6 +28,7 @@ def view_in_wishlist(request) -> dict:
     """
     Просматривает содержимое базы данных избранного wishlist.json
 
+    :param request: Объект запроса.
     :return: Содержимое 'wishlist.json'
     """
     if os.path.exists('wishlist.json'):  # Если файл существует
@@ -45,6 +47,7 @@ def add_to_wishlist(request, id_product: str) -> bool:
     """
     Добавляет продукт в избранное, если в избранном нет такого продукта.
 
+    :param request: Объект запроса.
     :param id_product: Идентификационный номер продукта в виде строки.
     :return: Возвращает True в случае успешного добавления, а False в случае неуспешного добавления(товара по id_product
     не существует).
@@ -68,6 +71,7 @@ def remove_from_wishlist(request, id_product: str) -> bool:
     """
     Удаляет позицию продукт из избранного. Если в избранном есть такой продукт, то он удаляется из списка.
 
+    :param request: Объект запроса.
     :param id_product: Идентификационный номер продукта в виде строки.
     :return: Возвращает True в случае успешного удаления, а False в случае неуспешного удаления(товара по id_product
     не существует).
@@ -90,6 +94,7 @@ def add_user_to_cart(request, username: str) -> None:
     """
     Добавляет пользователя в базу данных корзины, если его там не было.
 
+    :param request: Объект запроса.
     :param username: Имя пользователя
     :return: None
     """
@@ -105,16 +110,24 @@ def add_user_to_cart(request, username: str) -> None:
 
 def filter_same_category(current_product: dict,
                          database: dict[str, dict]) -> list[dict]:
+    """
+    Формирует  список продуктов той же категории, что и у выбранного продукта.
+
+    :param current_product: Текущий выбранный продукт.
+    :param database: База данны продуктов.
+    :return: Список словарей продуктов той же категории
+    """
     data = list(filter(lambda x: x.get('category') == current_product.get('category'), database.values()))
     if current_product in data: data.remove(current_product)
     shuffle(data)
     return data[:4]
 
 
-def view_in_cart(request) -> dict:  # Уже реализовано, не нужно здесь ничего писать
+def view_in_cart(request) -> dict:
     """
     Просматривает содержимое cart.json
 
+    :param request: Объект запроса.
     :return: Содержимое 'cart.json'
     """
     if os.path.exists('cart.json'):  # Если файл существует
@@ -134,12 +147,12 @@ def add_to_cart(request, id_product: str) -> bool:
     Добавляет продукт в корзину. Если в корзине нет данного продукта, то добавляет его с количеством равное 1.
     Если в корзине есть такой продукт, то добавляет количеству данного продукта + 1.
 
+    :param request: Объект запроса.
     :param id_product: Идентификационный номер продукта в виде строки.
     :return: Возвращает True в случае успешного добавления, а False в случае неуспешного добавления(товара по id_product
     не существует).
     """
-    cart_users = view_in_cart(request)  # Помните, что у вас есть уже реализация просмотра корзины,
-    # поэтому, чтобы загрузить данные из корзины, не нужно заново писать код.
+    cart_users = view_in_cart(request)
     cart = cart_users[get_user(request).username]  # получить корзину авторизированного пользователя
 
     # ! Обратите внимание, что в переменной cart находится словарь с ключом products.
@@ -148,11 +161,11 @@ def add_to_cart(request, id_product: str) -> bool:
     # ! cart["products"][id_product]
     # ! Далее уже сами решайте как и в какой последовательности дальше действовать.
 
-    # TODO Проверьте, а существует ли такой товар в корзине, если нет,
+    # Проверьте, а существует ли такой товар в корзине, если нет,
     # то перед тем как его добавить - проверьте есть ли такой id_product товара
     # в вашей базе данных DATABASE, чтобы уберечь себя от добавления несуществующего товара.
-    # TODO Если товар существует, то увеличиваем его количество на 1
-    # TODO Не забываем записать обновленные данные cart в 'cart.json'. Так как именно из этого файла мы считываем данные и если мы не запишем изменения, то считать измененные данные не получится.
+    # Если товар существует, то увеличиваем его количество на 1
+    # Не забываем записать обновленные данные cart в 'cart.json'. Так как именно из этого файла мы считываем данные и если мы не запишем изменения, то считать измененные данные не получится.
 
     if id_product not in cart.get('products'):
         if id_product not in DATABASE:
@@ -173,6 +186,7 @@ def remove_from_cart(request, id_product: str) -> bool:
     Удаляет позицию продукта из корзины. Если в корзине есть такой продукт, то удаляется ключ в словаре
     с этим продуктом.
 
+    :param request: Объект запроса.
     :param id_product: Идентификационный номер продукта в виде строки.
     :return: Возвращает True в случае успешного удаления, а False в случае неуспешного удаления(товара по id_product
     не существует).
@@ -182,12 +196,9 @@ def remove_from_cart(request, id_product: str) -> bool:
     cart = cart_users[get_user(request).username]
 
     # С переменной cart функции remove_from_cart ситуация аналогичная, что с cart функции add_to_cart
-
-    # TODO Проверьте, а существует ли такой товар в корзине, если нет, то возвращаем False.
-
-    # TODO Если существует товар, то удаляем ключ 'id_product' у cart['products'].
-
-    # TODO Не забываем записать обновленные данные cart в 'cart.json'
+    # Проверьте, а существует ли такой товар в корзине, если нет, то возвращаем False.
+    # Если существует товар, то удаляем ключ 'id_product' у cart['products'].
+    # Не забываем записать обновленные данные cart в 'cart.json'
 
     if id_product not in cart.get('products'):
         return False
@@ -223,7 +234,7 @@ def filtering_category(database: dict[str, dict],
         # [product for product in database.values() if ...] подумать, что за фильтрующее условие можно применить.
         # Сравните значение категории продукта со значением category_key
     else:
-        result = [*database.values()] #  Трансформируйте словарь словарей database в список словарей
+        result = [*database.values()]  # Трансформируйте словарь словарей database в список словарей
 
     if ordering_key is not None:
         # Проведите сортировку result по ordering_key и параметру reverse
